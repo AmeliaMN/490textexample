@@ -1,15 +1,8 @@
----
-title: "Sentiment analysis with R"
-format: gfm
-editor: visual
----
-
 ## Quarto and R
 
 We can use Quarto with R!
 
-```{r}
-#| message: false
+``` r
 library(tidyverse)
 library(tidytext)
 ```
@@ -18,14 +11,13 @@ library(tidytext)
 
 One way:
 
-```{r}
-#| message: false
+``` r
 wtp1 = read_delim("pg67098.txt", delim = "\n", col_names = 'text')
 ```
 
 ## Tidy text
 
-```{r}
+``` r
 wtp_words <- wtp1 %>%
   mutate(linenumber = row_number()) %>%
   unnest_tokens(word, text)
@@ -33,32 +25,38 @@ wtp_words <- wtp_words %>%
   mutate(word = str_replace_all(word, "_", ""))
 ```
 
-```{r}
+``` r
 sentiments <- get_sentiments("afinn")
 ```
 
-```{r}
+``` r
 wtp_sentiments <- wtp_words %>%
   inner_join(sentiments) %>%
   mutate(index = linenumber %/% 80)
+```
 
+    Joining, by = "word"
+
+``` r
 wtp_summarized_sentiment <- wtp_sentiments %>%
   group_by(index) %>%
   summarize(sentimentsum = sum(value), sentimentavg = mean(value))
 ```
 
-```{r}
+``` r
 ggplot(wtp_summarized_sentiment) + geom_col(aes(x=index, y=sentimentavg))
 ```
+
+![](lab_readwriteR_files/figure-gfm/unnamed-chunk-12-1.png)
 
 ## Writing out data
 
 One way
 
-```{r}
+``` r
 write_delim(wtp1, file = "wtp_cleaned.txt", delim = "\n")
 ```
 
-```{r}
+``` r
 write_csv(wtp_summarized_sentiment, file = "sentiment_wtp.csv")
 ```
